@@ -165,6 +165,7 @@ enum ItemParseAttributes_t {
 	ITEM_PARSE_WALKSTACK,
 	ITEM_PARSE_BLOCKING,
 	ITEM_PARSE_ALLOWDISTREAD,
+	ITEM_PARSE_ITEMLEVEL,
 };
 
 struct Abilities {
@@ -200,6 +201,8 @@ struct Abilities {
 	bool invisible = false;
 	bool regeneration = false;
 };
+
+
 
 class ConditionDamage;
 
@@ -326,8 +329,8 @@ class ItemType
 		int32_t runeMagLevel = 0;
 		int32_t runeLevel = 0;
 
-		// Mytheos
-		int32_t itemLevel = 0;
+		//Mytheos Charly
+		int32_t itemlevel = 0;
 
 		CombatType_t combatType = COMBAT_NONE;
 

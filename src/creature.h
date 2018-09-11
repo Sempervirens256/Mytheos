@@ -48,6 +48,7 @@ enum slots_t : uint8_t {
 	CONST_SLOT_LAST = CONST_SLOT_AMMO,
 };
 
+
 // Mytheos
 struct MytheosStatPrimary {
 	uint16_t level = 0;

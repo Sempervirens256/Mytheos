@@ -111,6 +111,14 @@ enum Attr_ReadValue {
 	ATTR_READ_END,
 };
 
+//Mytheos Charly
+
+struct MytheosItemStats {
+	uint8_t MytheosItemStat = 0;
+	uint16_t MytheosItemStatValue = 0;
+
+};
+
 class ItemAttributes
 {
 	public:
@@ -336,6 +344,7 @@ class ItemAttributes
 			}
 		};
 
+
 	private:
 		bool hasAttribute(itemAttrTypes type) const {
 			return (type & attributeBits) != 0;
@@ -516,6 +525,15 @@ class ItemAttributes
 class Item : virtual public Thing
 {
 	public:
+
+		//Mytheos CHarly
+
+		void changeMytheosItemStat(uint8_t stat, uint16_t itemStat, uint16_t value);
+		virtual uint16_t getMytheosItemStat(uint8_t stat) const {
+			return mytheosItemStats[stat].MytheosItemStat;
+		}
+
+
 		//Factory member to create item of right type based on type
 		static Item* CreateItem(const uint16_t type, uint16_t count = 0);
 		// Mytheos constructor
@@ -1001,9 +1019,12 @@ class Item : virtual public Thing
 
 		uint16_t id;  // the same id as in ItemType
 
-		uint32_t arrayItemStats[6];
-
 		uint8_t rarity = MYTHEOSITEMRARITY_FIRST;
+	    //Mytheos Charly
+		
+		//HINT it.mytheosItemStats[i].mytheosItemStatValue = 3;
+
+		MytheosItemStats mytheosItemStats[MYTHEOSSTATPRIMARY_LAST + 1];
 
 	private:
 		std::string getWeightDescription(uint32_t weight) const;

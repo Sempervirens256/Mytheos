@@ -331,6 +331,7 @@ enum SpecialSkills_t {
 	SPECIALSKILL_LAST = SPECIALSKILL_MANAPOINTSLEECHAMOUNT
 };
 
+
 // Mytheos
 enum MytheosStatsPrimary_t {
 	MYTHEOSSTATPRIMARY_STRENGTH,
