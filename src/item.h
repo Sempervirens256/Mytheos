@@ -518,12 +518,15 @@ class Item : virtual public Thing
 	public:
 		//Factory member to create item of right type based on type
 		static Item* CreateItem(const uint16_t type, uint16_t count = 0);
+		// Mytheos constructor
+		static Item * CreateItem(const uint16_t type, bool mytheosLoot, uint16_t count);
 		static Container* CreateItemAsContainer(const uint16_t type, uint16_t size);
 		static Item* CreateItem(PropStream& propStream);
 		static Items items;
 
 		// Constructor for items
 		Item(const uint16_t type, uint16_t count = 0);
+		Item(const uint16_t type, uint16_t count, bool mytheosLoot);
 		Item(const Item& i);
 		virtual Item* clone() const;
 
@@ -593,6 +596,10 @@ class Item : virtual public Thing
 			}
 			return attributes->getIntAttr(type);
 		}
+
+		// Mytheos
+		int8_t getRarity(uint16_t value);
+
 		void setIntAttr(itemAttrTypes type, int32_t value) {
 			getAttributes()->setIntAttr(type, value);
 		}
@@ -993,6 +1000,10 @@ class Item : virtual public Thing
 		Cylinder* parent = nullptr;
 
 		uint16_t id;  // the same id as in ItemType
+
+		uint32_t arrayItemStats[6];
+
+		uint8_t rarity = MYTHEOSITEMRARITY_FIRST;
 
 	private:
 		std::string getWeightDescription(uint32_t weight) const;

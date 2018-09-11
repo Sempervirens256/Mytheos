@@ -116,7 +116,13 @@ std::vector<Item*> MonsterType::createLootItem(const LootBlock& lootBlock)
 	std::vector<Item*> itemList;
 	while (itemCount > 0) {
 		uint16_t n = static_cast<uint16_t>(std::min<int32_t>(itemCount, 100));
-		Item* tmpItem = Item::CreateItem(lootBlock.id, n);
+		Item* tmpItem;
+		// Mytheos
+		if (mytheosLoot) {
+			tmpItem = Item::CreateItem(lootBlock.id, n, mytheosLoot);
+		} else {
+			tmpItem = Item::CreateItem(lootBlock.id, n);
+		}
 		if (!tmpItem) {
 			break;
 		}

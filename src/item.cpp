@@ -89,6 +89,72 @@ Item* Item::CreateItem(const uint16_t type, uint16_t count /*= 0*/)
 	return newItem;
 }
 
+// Mytheos
+Item* Item::CreateItem(const uint16_t type, bool mytheosLoot, uint16_t count /*= 0*/)
+{
+	Item* newItem = nullptr;
+
+	const ItemType& it = Item::items[type];
+	if (it.group == ITEM_GROUP_DEPRECATED) {
+		return nullptr;
+	}
+
+	if (it.stackable && count == 0) {
+		count = 1;
+	}
+
+	if (it.id != 0) {
+		if (it.isDepot()) {
+			newItem = new DepotLocker(type);
+		}
+		else if (it.isContainer()) {
+			newItem = new Container(type);
+		}
+		else if (it.isTeleport()) {
+			newItem = new Teleport(type);
+		}
+		else if (it.isMagicField()) {
+			newItem = new MagicField(type);
+		}
+		else if (it.isDoor()) {
+			newItem = new Door(type);
+		}
+		else if (it.isTrashHolder()) {
+			newItem = new TrashHolder(type);
+		}
+		else if (it.isMailbox()) {
+			newItem = new Mailbox(type);
+		}
+		else if (it.isBed()) {
+			newItem = new BedItem(type);
+		}
+		else if (it.id >= 2210 && it.id <= 2212) {
+			newItem = new Item(type - 3, count);
+		}
+		else if (it.id == 2215 || it.id == 2216) {
+			newItem = new Item(type - 2, count);
+		}
+		else if (it.id >= 2202 && it.id <= 2206) {
+			newItem = new Item(type - 37, count);
+		}
+		else if (it.id == 2640) {
+			newItem = new Item(6132, count);
+		}
+		else if (it.id == 6301) {
+			newItem = new Item(6300, count);
+		}
+		else if (it.id == 18528) {
+			newItem = new Item(18408, count);
+		} else {
+			newItem = new Item(type, count, true);
+		}
+
+		newItem->incrementReferenceCounter();
+	}
+
+	return newItem;
+}
+
 Container* Item::CreateItemAsContainer(const uint16_t type, uint16_t size)
 {
 	const ItemType& it = Item::items[type];
@@ -168,6 +234,65 @@ Item::Item(const uint16_t type, uint16_t count /*= 0*/) :
 	setDefaultDuration();
 }
 
+// Mytheos
+Item::Item(const uint16_t type, uint16_t count /*= 0*/, bool mytheosLoot) :
+	id(type)
+{
+	const ItemType& it = items[id];
+
+	uint8_t randRarityAux = uniform_random(0, 99);
+
+	if (it.itemLevel > 0 && it.itemLevel < 10) {
+		getRarity(randRarityAux);
+		switch (rarity) {
+			case MYTHEOSITEMRARITY_NORMAL: {
+				break;
+			}
+			case MYTHEOSITEMRARITY_MAGIC: {
+				uint8_t randomStat = uniform_random(0, MYTHEOSSTATPRIMARY_LAST);
+				arrayItemStats[0] = randomStat;
+				randomStat = uniform_random(0, MYTHEOSSTATPRIMARY_LAST);
+				arrayItemStats[1] = randomStat;
+				break;
+			}
+			case MYTHEOSITEMRARITY_RARE: {
+				break;
+			}
+			case MYTHEOSITEMRARITY_MYTHIC: {
+				break;
+			}
+			case MYTHEOSITEMRARITY_LEGENDARY: {
+				break;
+			}
+		}
+	}
+
+	// roll rarity > for each stat de rareza.
+	// if ilvl? > mytheosItemsStats[i] = rangodeIlvl(ilvl).
+
+	if (it.isFluidContainer() || it.isSplash()) {
+		setFluidType(count);
+	}
+	else if (it.stackable) {
+		if (count != 0) {
+			setItemCount(count);
+		}
+		else if (it.charges != 0) {
+			setItemCount(it.charges);
+		}
+	}
+	else if (it.charges != 0) {
+		if (count != 0) {
+			setCharges(count);
+		}
+		else {
+			setCharges(it.charges);
+		}
+	}
+
+	setDefaultDuration();
+}
+
 Item::Item(const Item& i) :
 	Thing(), id(i.id), count(i.count), loadedFromMap(i.loadedFromMap)
 {
@@ -218,6 +343,22 @@ bool Item::equals(const Item* otherItem) const
 		}
 	}
 	return true;
+}
+
+int8_t Item::getRarity(uint16_t value)
+{
+	if (value < 50) {
+		rarity = MYTHEOSITEMRARITY_NORMAL;
+	} else if (value > 49 && value < 79) {
+		rarity = MYTHEOSITEMRARITY_MAGIC;
+	} else if (value > 78 && value < 99) {
+		rarity = MYTHEOSITEMRARITY_RARE;
+	} else if (value == 99 ) {
+		rarity = MYTHEOSITEMRARITY_NORMAL;
+	} else if ( value > 99) {
+		rarity = MYTHEOSITEMRARITY_NORMAL;
+	}
+	return rarity;
 }
 
 void Item::setDefaultSubtype()

@@ -288,6 +288,10 @@ class ItemType
 			return str;
 		}
 
+		void setItemLevel(uint32_t level) {
+			itemLevel = level;
+		}
+
 		itemgroup_t group = ITEM_GROUP_NONE;
 		ItemTypes_t type = ITEM_TYPE_NONE;
 		uint16_t id = 0;
@@ -321,6 +325,9 @@ class ItemType
 		uint16_t rotateTo = 0;
 		int32_t runeMagLevel = 0;
 		int32_t runeLevel = 0;
+
+		// Mytheos
+		int32_t itemLevel = 0;
 
 		CombatType_t combatType = COMBAT_NONE;
 
