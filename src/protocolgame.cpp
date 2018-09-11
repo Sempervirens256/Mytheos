@@ -1322,6 +1322,14 @@ void ProtocolGame::sendStats()
 	writeToOutputBuffer(msg);
 }
 
+// Mytheos
+void ProtocolGame::sendMytheosStats()
+{
+	NetworkMessage msg;
+	AddPlayerMytheosStats(msg);
+	writeToOutputBuffer(msg);
+}
+
 void ProtocolGame::sendBasicData()
 {
 	NetworkMessage msg;
@@ -2934,6 +2942,18 @@ void ProtocolGame::AddPlayerSkills(NetworkMessage& msg)
 	for (uint8_t i = SPECIALSKILL_FIRST; i <= SPECIALSKILL_LAST; ++i) {
 		msg.add<uint16_t>(std::min<int32_t>(100, player->varSpecialSkills[i]));
 		msg.add<uint16_t>(0);
+	}
+}
+
+// Mytheos
+void ProtocolGame::AddPlayerMytheosStats(NetworkMessage& msg)
+{
+	// Este byte es el opcode para el cliente.
+	msg.addByte(0x34);
+
+	for (uint8_t i = MYTHEOSSTATPRIMARY_FIRST; i < MYTHEOSSTATPRIMARY_LAST + 1; ++i) {
+		msg.add<uint16_t>(player->getMytheosStatPrimary(i));
+		msg.add<uint16_t>(player->getMytheosStatPrimaryMultiplier(i));
 	}
 }
 

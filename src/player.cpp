@@ -2038,6 +2038,8 @@ void Player::death(Creature* lastHitCreature)
 
 		sendStats();
 		sendSkills();
+		// Mytheos
+		sendMytheosStats();
 		sendReLoginWindow(unfairFightReduction);
 
 		if (getSkull() == SKULL_BLACK) {
@@ -3182,7 +3184,7 @@ void Player::getPathSearchParams(const Creature* creature, FindPathParams& fpp) 
 
 void Player::doAttacking(uint32_t)
 {
-	// Mytheos
+	// Mytheos TODO check mount.
 	dismount();
 
 	if (lastAttack == 0) {
@@ -3193,7 +3195,7 @@ void Player::doAttacking(uint32_t)
 		return;
 	}
 
-	// Mytheos
+	// Mytheos "fury"
 	if ((OTSYS_TIME() - lastAttack) >= getAttackSpeed()) {
 		bool result = false;
 

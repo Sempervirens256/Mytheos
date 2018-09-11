@@ -340,6 +340,21 @@ CREATE TABLE IF NOT EXISTS `towns` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8;
 
+ALTER TABLE `players` ADD (
+	`strength` int(11) NOT NULL DEFAULT '0',
+	`strength_multiplier` int(11) NOT NULL DEFAULT '0',
+	`vitality` int(11) NOT NULL DEFAULT '0',
+	`vitality_multiplier` int(11) NOT NULL DEFAULT '0',
+	`agility` int(11) NOT NULL DEFAULT '0',
+	`agility_multiplier` int(11) NOT NULL DEFAULT '0',
+	`dexterity` int(11) NOT NULL DEFAULT '0',
+	`dexterity_multiplier` int(11) NOT NULL DEFAULT '0',
+	`intelligence` int(11) NOT NULL DEFAULT '0',
+	`intelligence_multiplier` int(11) NOT NULL DEFAULT '0',
+	`wisdom` int(11) NOT NULL DEFAULT '0',
+	`wisdom_multiplier` int(11) NOT NULL DEFAULT '0'
+)
+
 DROP TRIGGER IF EXISTS `ondelete_players`;
 DROP TRIGGER IF EXISTS `oncreate_guilds`;
 

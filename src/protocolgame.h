@@ -193,6 +193,8 @@ class ProtocolGame final : public Protocol
 		void sendCancelTarget();
 		void sendCreatureOutfit(const Creature* creature, const Outfit_t& outfit);
 		void sendStats();
+		// Mytheos
+		void sendMytheosStats();
 		void sendBasicData();
 		void sendTextMessage(const TextMessage& message);
 		void sendReLoginWindow(uint8_t unfairFightReduction);
@@ -284,6 +286,8 @@ class ProtocolGame final : public Protocol
 
 		void AddCreature(NetworkMessage& msg, const Creature* creature, bool known, uint32_t remove);
 		void AddPlayerStats(NetworkMessage& msg);
+		// Mytheos
+		void AddPlayerMytheosStats(NetworkMessage & msg);
 		void AddOutfit(NetworkMessage& msg, const Outfit_t& outfit);
 		void AddPlayerSkills(NetworkMessage& msg);
 		void AddWorldLight(NetworkMessage& msg, LightInfo lightInfo);

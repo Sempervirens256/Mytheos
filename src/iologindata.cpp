@@ -233,7 +233,7 @@ bool IOLoginData::loadPlayerById(Player* player, uint32_t id)
 {
 	Database& db = Database::getInstance();
 	std::ostringstream query;
-	query << "SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries` FROM `players` WHERE `id` = " << id;
+	query << "SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries`, `strength`, `strength_multiplier`, `vitality`, `vitality_multiplier`, `agility`, `agility_multiplier`, `dexterity`, `dexterity_multiplier`, `intelligence`, `intelligence_multiplier`, `wisdom`, `wisdom_multiplier` FROM `players` WHERE `id` = " << id;
 	return loadPlayer(player, db.storeQuery(query.str()));
 }
 
@@ -241,7 +241,7 @@ bool IOLoginData::loadPlayerByName(Player* player, const std::string& name)
 {
 	Database& db = Database::getInstance();
 	std::ostringstream query;
-	query << "SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries` FROM `players` WHERE `name` = " << db.escapeString(name);
+	query << "SELECT `id`, `name`, `account_id`, `group_id`, `sex`, `vocation`, `experience`, `level`, `maglevel`, `health`, `healthmax`, `blessings`, `mana`, `manamax`, `manaspent`, `soul`, `lookbody`, `lookfeet`, `lookhead`, `looklegs`, `looktype`, `lookaddons`, `posx`, `posy`, `posz`, `cap`, `lastlogin`, `lastlogout`, `lastip`, `conditions`, `skulltime`, `skull`, `town_id`, `balance`, `offlinetraining_time`, `offlinetraining_skill`, `stamina`, `skill_fist`, `skill_fist_tries`, `skill_club`, `skill_club_tries`, `skill_sword`, `skill_sword_tries`, `skill_axe`, `skill_axe_tries`, `skill_dist`, `skill_dist_tries`, `skill_shielding`, `skill_shielding_tries`, `skill_fishing`, `skill_fishing_tries`, `strength`, `strength_multiplier`, `vitality`, `vitality_multiplier`, `agility`, `agility_multiplier`, `dexterity`, `dexterity_multiplier`, `intelligence`, `intelligence_multiplier`, `wisdom`, `wisdom_multiplier` FROM `players` WHERE `name` = " << db.escapeString(name);
 	return loadPlayer(player, db.storeQuery(query.str()));
 }
 
@@ -398,6 +398,17 @@ bool IOLoginData::loadPlayer(Player* player, DBResult_ptr result)
 		player->skills[i].level = skillLevel;
 		player->skills[i].tries = skillTries;
 		player->skills[i].percent = Player::getPercentLevel(skillTries, nextSkillTries);
+	}
+
+	// Mytheos
+	static const std::string primaryStatNames[] = { "strength", "vitality", "agility", "dexterity", "intelligence", "wisdom" };
+	static const std::string primaryStatNamesMultipliers[] = { "strength_multiplier", "vitality_multiplier", "agility_multiplier", "dexterity_multiplier", "intelligence_multiplier", "wisdom_multiplier" };
+	for (uint8_t i = 0; i < (MYTHEOSSTATPRIMARY_LAST + 1); ++i) {
+		uint16_t statLevel = result->getNumber<uint16_t>(primaryStatNames[i]);
+		uint8_t statMultiplier = result->getNumber<uint8_t>(primaryStatNamesMultipliers[i]);
+
+		player->mytheosStatsPrimary[i].level = statLevel;
+		player->mytheosStatsPrimary[i].multiplier = statMultiplier;
 	}
 
 	std::ostringstream query;
@@ -735,6 +746,20 @@ bool IOLoginData::savePlayer(Player* player)
 	query << "`skill_shielding_tries` = " << player->skills[SKILL_SHIELD].tries << ',';
 	query << "`skill_fishing` = " << player->skills[SKILL_FISHING].level << ',';
 	query << "`skill_fishing_tries` = " << player->skills[SKILL_FISHING].tries << ',';
+
+	// Mytheos
+	query << "`strength` = " << player->mytheosStatsPrimary[MYTHEOSSTATPRIMARY_STRENGTH].level << ',';
+	query << "`strength_multiplier` = " << player->mytheosStatsPrimary[MYTHEOSSTATPRIMARY_STRENGTH].multiplier << ',';
+	query << "`vitality` = " << player->mytheosStatsPrimary[MYTHEOSSTATPRIMARY_VITALITY].level << ',';
+	query << "`vitality_multiplier` = " << player->mytheosStatsPrimary[MYTHEOSSTATPRIMARY_VITALITY].multiplier << ',';
+	query << "`agility` = " << player->mytheosStatsPrimary[MYTHEOSSTATPRIMARY_AGILITY].level << ',';
+	query << "`agility_multiplier` = " << player->mytheosStatsPrimary[MYTHEOSSTATPRIMARY_AGILITY].multiplier << ',';
+	query << "`dexterity` = " << player->mytheosStatsPrimary[MYTHEOSSTATPRIMARY_DEXTERITY].level << ',';
+	query << "`dexterity_multiplier` = " << player->mytheosStatsPrimary[MYTHEOSSTATPRIMARY_DEXTERITY].multiplier << ',';
+	query << "`intelligence` = " << player->mytheosStatsPrimary[MYTHEOSSTATPRIMARY_INTELLIGENCE].level << ',';
+	query << "`intelligence_multiplier` = " << player->mytheosStatsPrimary[MYTHEOSSTATPRIMARY_INTELLIGENCE].multiplier << ',';
+	query << "`wisdom` = " << player->mytheosStatsPrimary[MYTHEOSSTATPRIMARY_WISDOM].level << ',';
+	query << "`wisdom_multiplier` = " << player->mytheosStatsPrimary[MYTHEOSSTATPRIMARY_WISDOM].multiplier << ',';
 
 	if (!player->isOffline()) {
 		query << "`onlinetime` = `onlinetime` + " << (time(nullptr) - player->lastLoginSaved) << ',';

@@ -947,6 +947,12 @@ class Player final : public Creature, public Cylinder
 			}
 		}
 		void sendStats();
+		// Mytheos
+		void sendMytheosStats() const {
+			if (client) {
+				client->sendMytheosStats();
+			}
+		}
 		void sendBasicData() const {
 			if (client) {
 				client->sendBasicData();
@@ -1218,6 +1224,10 @@ class Player final : public Creature, public Cylinder
 		std::string guildNick;
 
 		Skill skills[SKILL_LAST + 1];
+		// Mytheos
+		MytheosStatPrimary mytheosStatsPrimary[MYTHEOSSTATPRIMARY_LAST + 1];
+		MytheosStatSecondary mytheosStatsSecondary[MYTHEOSSTATSECONDARY_LAST + 1];
+
 		LightInfo itemsLight;
 		Position loginPosition;
 		Position lastWalkthroughPosition;
@@ -1333,7 +1343,7 @@ class Player final : public Creature, public Cylinder
 		bool isPromoted() const;
 
 		uint32_t getAttackSpeed() const {
-			return attackSpeed;
+			return vocation->getAttackSpeed();
 		}
 
 		static uint8_t getPercentLevel(uint64_t count, uint64_t nextLevelCount);
