@@ -247,7 +247,7 @@ bool Monsters::deserializeSpell(const pugi::xml_node& node, spellBlock_t& sb, Mo
 	}
 
 	if ((attr = node.attribute("min"))) {
-		if (mType2->info.attackStat > 0) {
+		if (mType2->info.attackStat > 0 && false) {
 			std::cout << "1 mType->info.attackStat = " << mType2->info.attackStat << "\n";
 
 			float minDmgAux = (mType2->info.attackStat / 100.f) * pugi::cast<int32_t>(attr.value());
@@ -262,7 +262,7 @@ bool Monsters::deserializeSpell(const pugi::xml_node& node, spellBlock_t& sb, Mo
 
 	if ((attr = node.attribute("max"))) {
 
-		if (mType2->info.attackStat > 0) {
+		if (mType2->info.attackStat > 0 && false) {
 			float maxDmgAux = (mType2->info.attackStat / 100.f) * pugi::cast<int32_t>(attr.value());
 			sb.maxCombatValue = static_cast<int32_t>(maxDmgAux);
 			std::cout << "1 sb.maxCombatValue = " << sb.maxCombatValue << "\n";
@@ -651,6 +651,8 @@ MonsterType* Monsters::loadMonster(const std::string& file, const std::string& m
 		std::cout << "[Error - Monsters::loadMonster] Missing name in: " << file << std::endl;
 		return nullptr;
 	}
+	
+		 
 
 	if (reloading) {
 		auto it = monsters.find(asLowerCaseString(monsterName));

@@ -1468,52 +1468,25 @@ bool Creature::unregisterCreatureEvent(const std::string& name)
 
 void Creature::initializeStats()
 {
-	// Sistema de stats Mytheos
-			// Stats primarias
-	strenght = 0;
-	vitality = 0;
-	agility = 0;
-	dexterity = 0;
-	intelligence = 0;
-	wisdom = 0;
-	// Secondary Stats
-	attackSpeed = 2000;
-	castTime = 0;
-	magicAttack = 0;
-	attackStat = 0;
-	dodge = 0;
-	criticalChance = 0;
-	criticalDamage = 0;
-	defenceStat = 0;
-	magicDefence = 0;
-	hitStat = 0;
-	// Tertiary Stats
-	resistances = 0;
+	for (uint8_t i = 0; i < MYTHEOSSTATPRIMARY_LAST + 1; i++) {
+		mytheosStatsPrimary[i].level = 0;
+		mytheosStatsPrimary[i].multiplier = 0;
+	}
+
+	for (uint8_t i = 0; i < MYTHEOSSTATSECONDARY_LAST + 1; i++) {
+		mytheosStatsSecondary[i].level = 0;
+	}
 }
 
-void Creature::changeStats(uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, uint32_t p8, uint32_t p9, uint32_t p10, uint32_t p11, uint32_t p12, uint32_t p13, uint32_t p14, uint32_t p15, uint32_t p16, int32_t p17)
+void Creature::changeStatPrimary(uint8_t stat, uint16_t level, uint16_t multiplier)
 {
-	// Sistema de stats Mytheos
-			// Stats primarias
-	strenght = p1;
-	vitality = p2;
-	agility = p3;
-	dexterity = p4;
-	intelligence = p5;
-	wisdom = p6;
-	// Secondary Stats
-	attackSpeed = p7;
-	castTime = p8;
-	magicAttack = p9;
-	attackStat = p10;
-	dodge = p11;
-	criticalChance = p12;
-	criticalDamage = p13;
-	defenceStat = p14;
-	magicDefence = p15;
-	hitStat = p16;
-	// Tertiary Stats
-	resistances = p17;
+	mytheosStatsPrimary[stat].level = level;
+	mytheosStatsPrimary[stat].multiplier = multiplier;
+}
+
+void Creature::changeStatSecondary(uint8_t stat, uint16_t level)
+{
+	mytheosStatsSecondary[stat].level = level;
 }
 
 CreatureEventList Creature::getCreatureEvents(CreatureEventType_t type)

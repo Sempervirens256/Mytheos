@@ -376,7 +376,12 @@ void Weapon::internalUseWeapon(Player* player, Item* item, Creature* target, int
 			damage.origin = ORIGIN_MELEE;
 		}
 		damage.primary.type = params.combatType;
-		damage.primary.value = (getWeaponDamage(player, target, item) * damageModifier) / 100;
+		/* Mytheos attackstat calculations?
+		player->setAttackStat(100);
+		float dmgValueAux = ((getWeaponDamage(player, target, item) * damageModifier) / 100.f) - (player->getAttackStat());
+		static_cast<int32_t>(dmgValueAux);
+		*/
+		damage.primary.value = (getWeaponDamage(player, target, item) * damageModifier) / 100.f;
 		damage.secondary.type = getElementType();
 		damage.secondary.value = getElementDamage(player, target, item);
 		Combat::doCombatHealth(player, target, damage, params);

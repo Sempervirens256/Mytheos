@@ -48,6 +48,16 @@ enum slots_t : uint8_t {
 	CONST_SLOT_LAST = CONST_SLOT_AMMO,
 };
 
+// Mytheos
+struct MytheosStatPrimary {
+	uint16_t level = 0;
+	uint8_t multiplier = 0;
+};
+
+struct MytheosStatSecondary {
+	uint16_t level = 0;
+};
+
 struct FindPathParams {
 	bool fullPathSearch = true;
 	bool clearSight = true;
@@ -526,133 +536,22 @@ class Creature : virtual public Thing
 		bool hiddenHealth = false;
 		bool canUseDefense = true;
 
-		// Sistema de stats Mytheos
-			// Stats primarias
-		uint32_t strenght = 0;
-		uint32_t vitality = 0;
-		uint32_t agility = 0;
-		uint32_t dexterity = 0;
-		uint32_t intelligence = 0;
-		uint32_t wisdom = 0;
-			// Secondary Stats
-		uint32_t attackSpeed = 2000;
-		uint32_t castTime = 0;
-		uint32_t magicAttack = 0;
-		uint32_t attackStat = 0;
-		uint32_t dodge = 0;
-		uint32_t criticalChance = 0;
-		uint32_t criticalDamage = 0;
-		uint32_t defenceStat = 0;
-		uint32_t magicDefence = 0;
-		uint32_t hitStat = 0;
-			// Tertiary Stats
-		int32_t resistances = 0;
+		//Mytheos stat system
+		MytheosStatPrimary mytheosStatsPrimary[MYTHEOSSTATPRIMARY_LAST + 1];
+		MytheosStatSecondary mytheosStatsSecondary[MYTHEOSSTATSECONDARY_LAST + 1];
 
-	public:
-		uint32_t getStrenght() {
-			return strenght;
-		}
-		uint32_t getVitality() {
-			return vitality;
-		}
-		uint32_t getIntelligence() {
-			return intelligence;
-		}
-		uint32_t getWisdom() {
-			return wisdom;
-		}
-		uint32_t getDexterity() {
-			return dexterity;
-		}
-		uint32_t getAttackSpeed() {
-			return attackSpeed;
-		}
-		uint32_t getCastTime() {
-			return castTime;
-		}
-		uint32_t getMagicAttack() {
-			return magicAttack;
-		}
-		uint32_t getAttackStat() {
-			return attackStat;
-		}
-		uint32_t getDodge() {
-			return dodge;
-		}
-		uint32_t getCriticalChance() {
-			return criticalChance;
-		}
-		uint32_t getCriticalDamage() {
-			return criticalDamage;
-		}
-		uint32_t getDefenceStat() {
-			return defenceStat;
-		}
-		uint32_t getMagicDefence() {
-			return magicDefence;
-		}
-		uint32_t getHitStat() {
-			return hitStat;
-		}
-		int32_t getResistances() {
-			return resistances;
-		}
-
-		void setStrenght(uint32_t p1) {
-			strenght = p1;
-		}
-		void setVitality(uint32_t p1) {
-			vitality = p1;
-		}
-		void setIntelligence(uint32_t p1) {
-			intelligence = p1;
-		}
-		void setWisdom(uint32_t p1) {
-			wisdom = p1;
-		}
-		void setDexterity(uint32_t p1) {
-			dexterity = p1;
-		}
-		void setAttackSpeed(uint32_t p1) {
-			attackSpeed = p1;
-		}
-		void setCastTime(uint32_t p1) {
-			castTime = p1;
-		}
-		void setMagicAttack(uint32_t p1) {
-			magicAttack = p1;
-		}
-		void setAttackStat(uint32_t p1) {
-			attackStat = p1;
-		}
-		void setDodge(uint32_t p1) {
-			dodge = p1;
-		}
-		void setCriticalChance(uint32_t p1) {
-			criticalChance = p1;
-		}
-		void setCriticalDamage(uint32_t p1) {
-			criticalDamage = p1;
-		}
-		void setDefenceStat(uint32_t p1) {
-			defenceStat = p1;
-		}
-		void setMagicDefence(uint32_t p1) {
-			magicDefence = p1;
-		}
-		void setHitStat(uint32_t p1) {
-			hitStat = p1;
-		}
-		void setResistances(int32_t p1) {
-			resistances = p1;
-		}
-
-
-	protected:
-		// Mytheos
 		void initializeStats();
-		void changeStats(uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, uint32_t p8, uint32_t p9,
-			uint32_t p10, uint32_t p11, uint32_t p12, uint32_t p13, uint32_t p14, uint32_t p15, uint32_t p16, int32_t p17);
+		void changeStatPrimary(uint8_t stat, uint16_t level, uint16_t multiplier);
+		void changeStatSecondary(uint8_t stat, uint16_t level);
+		virtual uint16_t getMytheosStatPrimary(uint8_t stat) const {
+			return mytheosStatsPrimary[stat].level;
+		}
+		virtual uint16_t getMytheosStatPrimaryMultiplier(uint8_t stat) const {
+			return mytheosStatsPrimary[stat].multiplier;
+		}
+		virtual uint16_t getMytheosStatSecondary(uint8_t stat) const {
+			return mytheosStatsSecondary[stat].level;
+		}
 		//creature script events
 		bool hasEventRegistered(CreatureEventType_t event) const {
 			return (0 != (scriptEventsBitField & (static_cast<uint32_t>(1) << event)));
