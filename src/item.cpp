@@ -37,6 +37,15 @@ extern Vocations g_vocations;
 
 Items Item::items;
 
+//Mytheos Charles
+
+void Item::changeMytheosItemStat(uint8_t stat, uint16_t itemStat, uint16_t value)
+{
+	mytheosItemStats[stat].MytheosItemStat = itemStat;
+	mytheosItemStats[stat].MytheosItemStatValue = value;
+
+}
+
 Item* Item::CreateItem(const uint16_t type, uint16_t count /*= 0*/)
 {
 	Item* newItem = nullptr;
