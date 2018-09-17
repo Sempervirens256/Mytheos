@@ -56,6 +56,7 @@ void MonsterType::createLoot(Container* corpse)
 	Player* owner = g_game.getPlayerByID(corpse->getCorpseOwner());
 	if (!owner || owner->getStaminaMinutes() > 840) {
 		for (auto it = info.lootItems.rbegin(), end = info.lootItems.rend(); it != end; ++it) {
+			// Mytheos aqui se crea el loot
 			auto itemList = createLootItem(*it);
 			if (itemList.empty()) {
 				continue;
@@ -116,7 +117,9 @@ std::vector<Item*> MonsterType::createLootItem(const LootBlock& lootBlock)
 	std::vector<Item*> itemList;
 	while (itemCount > 0) {
 		uint16_t n = static_cast<uint16_t>(std::min<int32_t>(itemCount, 100));
-		Item* tmpItem = Item::CreateItem(lootBlock.id, n);
+		Item* tmpItem;
+		// Mytheos
+		tmpItem = Item::CreateItem(lootBlock.id, n);
 		if (!tmpItem) {
 			break;
 		}

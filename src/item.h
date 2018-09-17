@@ -102,7 +102,8 @@ enum AttrTypes_t {
 	ATTR_ARMOR = 31,
 	ATTR_HITCHANCE = 32,
 	ATTR_SHOOTRANGE = 33,
-	ATTR_CUSTOM_ATTRIBUTES = 34
+	ATTR_CUSTOM_ATTRIBUTES = 34,
+	ATTR_MYTHEOS_STATS = 35
 };
 
 enum Attr_ReadValue {
@@ -336,6 +337,7 @@ class ItemAttributes
 			}
 		};
 
+
 	private:
 		bool hasAttribute(itemAttrTypes type) const {
 			return (type & attributeBits) != 0;
@@ -356,6 +358,7 @@ class ItemAttributes
 				std::string* string;
 				CustomAttributeMap* custom;
 			} value;
+			int64_t value2;
 			itemAttrTypes type;
 
 			explicit Attribute(itemAttrTypes type) : type(type) {
@@ -420,6 +423,13 @@ class ItemAttributes
 		int64_t getIntAttr(itemAttrTypes type) const;
 		void setIntAttr(itemAttrTypes type, int64_t value);
 		void increaseIntAttr(itemAttrTypes type, int64_t value);
+
+		// Mytheos second attr value.
+		int64_t getSecondIntAttr(itemAttrTypes type) const;
+		void setSecondIntAttr(itemAttrTypes type, int64_t value);
+		void increaseSecondIntAttr(itemAttrTypes type, int64_t value);
+		void setBothIntAttr(itemAttrTypes type, int32_t value1, int32_t value2);
+
 
 		const Attribute* getExistingAttr(itemAttrTypes type) const;
 		Attribute& getAttr(itemAttrTypes type);
@@ -497,13 +507,20 @@ class ItemAttributes
 
 	public:
 		static bool isIntAttrType(itemAttrTypes type) {
-			return (type & 0x7FFE13) != 0;
+			// Original return (type & 0x7FFE13) != 0;
+			//Mytheos
+			return (type & 0x3FFFFE13) != 0;
 		}
 		static bool isStrAttrType(itemAttrTypes type) {
 			return (type & 0x1EC) != 0;
 		}
 		inline static bool isCustomAttrType(itemAttrTypes type) {
 			return (type & 0x80000000) != 0;
+		}
+
+		// Mytheos isMytheosAttrType
+		static bool isMytheosAttrType(itemAttrTypes type) {
+			return (type & 0x3F800000) != 0;
 		}
 
 		const std::forward_list<Attribute>& getList() const {
@@ -516,8 +533,11 @@ class ItemAttributes
 class Item : virtual public Thing
 {
 	public:
+
 		//Factory member to create item of right type based on type
 		static Item* CreateItem(const uint16_t type, uint16_t count = 0);
+		// Mytheos constructor
+		static Item* CreateMytheosItem(const uint16_t type, bool mytheosLoot, uint16_t count = 0);
 		static Container* CreateItemAsContainer(const uint16_t type, uint16_t size);
 		static Item* CreateItem(PropStream& propStream);
 		static Items items;
@@ -599,6 +619,31 @@ class Item : virtual public Thing
 		void increaseIntAttr(itemAttrTypes type, int32_t value) {
 			getAttributes()->increaseIntAttr(type, value);
 		}
+
+		// Mytheos
+		int32_t getSecondIntAttr(itemAttrTypes type) const {
+			if (!attributes) {
+				return 0;
+			}
+			return attributes->getSecondIntAttr(type);
+		}
+		void setSecondIntAttr(itemAttrTypes type, int32_t value) {
+			getAttributes()->setSecondIntAttr(type, value);
+		}
+		void increaseSecondIntAttr(itemAttrTypes type, int32_t value) {
+			getAttributes()->increaseSecondIntAttr(type, value);
+		}
+		void setBothIntAttr(itemAttrTypes type, int32_t value1, int32_t value2) {
+			getAttributes()->setBothIntAttr(type, value1, value2);
+		}
+		void setMytheosAttr(uint8_t statSlot, uint8_t statType, int32_t value);
+		bool hasMytheosStatInSlot(uint8_t statSlot) const;
+		int32_t getMytheosStatValueIntAttr(uint8_t statSlot) const;
+		uint8_t getMytheosStatTypeIntAttr(uint8_t statSlot) const;
+		const std::string getMytheosStatTypeStrAttr(uint8_t statSlot) const;
+		const std::string mytheosStatInSlotToString(itemAttrTypes type) const;
+		const std::string mytheosStatInSlotToString(uint8_t statType) const;
+		//
 
 		void removeAttribute(itemAttrTypes type) {
 			if (attributes) {
@@ -757,6 +802,9 @@ class Item : virtual public Thing
 			}
 			return static_cast<ItemDecayState_t>(getIntAttr(ITEM_ATTRIBUTE_DECAYSTATE));
 		}
+
+		// Mytheos
+		int8_t getRarity(uint16_t value);
 
 		static std::string getDescription(const ItemType& it, int32_t lookDistance, const Item* item = nullptr, int32_t subType = -1, bool addArticle = true);
 		static std::string getNameDescription(const ItemType& it, const Item* item = nullptr, int32_t subType = -1, bool addArticle = true);
@@ -989,10 +1037,15 @@ class Item : virtual public Thing
 			return !parent || parent->isRemoved();
 		}
 
+		void assignMytheosItemStats(int8_t numberStats, uint32_t ilvl);
+		void assignMytheosItemStats2(int8_t numberStats, uint32_t ilvl);
+
 	protected:
 		Cylinder* parent = nullptr;
 
 		uint16_t id;  // the same id as in ItemType
+
+		uint8_t rarity = MYTHEOSITEMRARITY_FIRST;
 
 	private:
 		std::string getWeightDescription(uint32_t weight) const;

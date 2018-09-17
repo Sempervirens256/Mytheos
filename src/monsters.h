@@ -218,6 +218,7 @@ class Monsters
 		std::unique_ptr<LuaScriptInterface> scriptInterface;
 
 		bool loaded = false;
+
 };
 
 #endif
