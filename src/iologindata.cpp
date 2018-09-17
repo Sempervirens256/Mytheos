@@ -596,6 +596,7 @@ bool IOLoginData::saveItems(const Player* player, const ItemBlockList& itemList,
 		size_t attributesSize;
 		const char* attributes = propWriteStream.getStream(attributesSize);
 
+		// Mytheos item stats > database
 		ss << player->getGUID() << ',' << pid << ',' << runningId << ',' << item->getID() << ',' << item->getSubType() << ',' << db.escapeBlob(attributes, attributesSize);
 		if (!query_insert.addRow(ss)) {
 			return false;
@@ -626,6 +627,8 @@ bool IOLoginData::saveItems(const Player* player, const ItemBlockList& itemList,
 			size_t attributesSize;
 			const char* attributes = propWriteStream.getStream(attributesSize);
 
+
+			// Mytheos items inside containers item stats > database
 			ss << player->getGUID() << ',' << parentId << ',' << runningId << ',' << item->getID() << ',' << item->getSubType() << ',' << db.escapeBlob(attributes, attributesSize);
 			if (!query_insert.addRow(ss)) {
 				return false;
@@ -970,6 +973,13 @@ void IOLoginData::loadItems(ItemMap& itemMap, DBResult_ptr result)
 			if (!item->unserializeAttr(propStream)) {
 				std::cout << "WARNING: Serialize error in IOLoginData::loadItems" << std::endl;
 			}
+
+			/* Mytheos, printing item stats
+			for (uint8_t i = 0; i < MYTHEOSITEMSTATSLOT_LAST + 1; i++) {
+				std::cout << "ItemStat[" << std::to_string(i) << "]: " << item->getMytheosItemStat(i) << ", ItemStatValue[" << std::to_string(i) << "]: " << item->getMytheosItemStatValue(i) << "\n";
+			}
+			*/
+			
 
 			std::pair<Item*, uint32_t> pair(item, pid);
 			itemMap[sid] = pair;

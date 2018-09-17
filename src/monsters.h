@@ -168,9 +168,6 @@ class MonsterType
 	};
 
 	public:
-
-		// Mytheos
-		bool mytheosLoot = true;
 		
 		MonsterType() = default;
 

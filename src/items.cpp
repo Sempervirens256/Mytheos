@@ -146,8 +146,7 @@ const std::unordered_map<std::string, ItemParseAttributes_t> ItemParseAttributes
 	{"walkstack", ITEM_PARSE_WALKSTACK},
 	{"blocking", ITEM_PARSE_BLOCKING},
 	{"itemlevel", ITEM_PARSE_ITEMLEVEL},
-	{"allowdistread", ITEM_PARSE_ALLOWDISTREAD},
-	
+	{"allowdistread", ITEM_PARSE_ALLOWDISTREAD},	
 };
 
 const std::unordered_map<std::string, ItemTypes_t> ItemTypesMap = {
@@ -642,9 +641,8 @@ void Items::parseItemNode(const pugi::xml_node& itemNode, uint16_t id)
 				}
 
 			    // Mytheos Charly
-
 				case ITEM_PARSE_ITEMLEVEL: {
-					it.itemlevel = pugi::cast<int32_t>(valueAttribute.value());
+					it.itemLevel = pugi::cast<int32_t>(valueAttribute.value());
 					break;
 				}
 

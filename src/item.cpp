@@ -37,15 +37,6 @@ extern Vocations g_vocations;
 
 Items Item::items;
 
-//Mytheos Charles
-
-void Item::changeMytheosItemStat(uint8_t stat, uint16_t itemStat, uint16_t value)
-{
-	mytheosItemStats[stat].MytheosItemStat = itemStat;
-	mytheosItemStats[stat].MytheosItemStatValue = value;
-
-}
-
 Item* Item::CreateItem(const uint16_t type, uint16_t count /*= 0*/)
 {
 	Item* newItem = nullptr;
@@ -90,72 +81,6 @@ Item* Item::CreateItem(const uint16_t type, uint16_t count /*= 0*/)
 			newItem = new Item(18408, count);
 		} else {
 			newItem = new Item(type, count);
-		}
-
-		newItem->incrementReferenceCounter();
-	}
-
-	return newItem;
-}
-
-// Mytheos
-Item* Item::CreateItem(const uint16_t type, bool mytheosLoot, uint16_t count /*= 0*/)
-{
-	Item* newItem = nullptr;
-
-	const ItemType& it = Item::items[type];
-	if (it.group == ITEM_GROUP_DEPRECATED) {
-		return nullptr;
-	}
-
-	if (it.stackable && count == 0) {
-		count = 1;
-	}
-
-	if (it.id != 0) {
-		if (it.isDepot()) {
-			newItem = new DepotLocker(type);
-		}
-		else if (it.isContainer()) {
-			newItem = new Container(type);
-		}
-		else if (it.isTeleport()) {
-			newItem = new Teleport(type);
-		}
-		else if (it.isMagicField()) {
-			newItem = new MagicField(type);
-		}
-		else if (it.isDoor()) {
-			newItem = new Door(type);
-		}
-		else if (it.isTrashHolder()) {
-			newItem = new TrashHolder(type);
-		}
-		else if (it.isMailbox()) {
-			newItem = new Mailbox(type);
-		}
-		else if (it.isBed()) {
-			newItem = new BedItem(type);
-		}
-		else if (it.id >= 2210 && it.id <= 2212) {
-			newItem = new Item(type - 3, count);
-		}
-		else if (it.id == 2215 || it.id == 2216) {
-			newItem = new Item(type - 2, count);
-		}
-		else if (it.id >= 2202 && it.id <= 2206) {
-			newItem = new Item(type - 37, count);
-		}
-		else if (it.id == 2640) {
-			newItem = new Item(6132, count);
-		}
-		else if (it.id == 6301) {
-			newItem = new Item(6300, count);
-		}
-		else if (it.id == 18528) {
-			newItem = new Item(18408, count);
-		} else {
-			newItem = new Item(type, count, true);
 		}
 
 		newItem->incrementReferenceCounter();
@@ -224,6 +149,39 @@ Item::Item(const uint16_t type, uint16_t count /*= 0*/) :
 {
 	const ItemType& it = items[id];
 
+	// Mytheos, assign stats to loot items based on their ilvl (ilvl on .xml file).
+	uint8_t randRarityAux = uniform_random(0, 99);
+
+	if (it.itemLevel > 0) {
+		getRarity(randRarityAux);
+		switch (rarity) {
+			case MYTHEOSITEMRARITY_NORMAL: {
+				assignMytheosItemStats(1, it.itemLevel);
+				break;
+			}
+			case MYTHEOSITEMRARITY_MAGIC: {
+				assignMytheosItemStats(1, it.itemLevel);
+				break;
+			}
+			case MYTHEOSITEMRARITY_RARE: {
+				assignMytheosItemStats(3, it.itemLevel);
+				break;
+			}
+			case MYTHEOSITEMRARITY_MYTHIC: {
+				assignMytheosItemStats(5, it.itemLevel);
+				break;
+			}
+			case MYTHEOSITEMRARITY_LEGENDARY: {
+				assignMytheosItemStats(5, it.itemLevel);
+				break;
+			}
+		}
+		//// Mytheos, printing item stats
+		//for (uint8_t i = 0; i < MYTHEOSITEMSTATSLOT_LAST + 1; i++) {
+		//	std::cout << "ItemStat[" << std::to_string(i) << "]: " << getMytheosItemStat(i) << ", ItemStatValue[" << std::to_string(i) << "]: " << getMytheosItemStatValue(i) << "\n";
+		//}
+	}
+
 	if (it.isFluidContainer() || it.isSplash()) {
 		setFluidType(count);
 	} else if (it.stackable) {
@@ -243,63 +201,33 @@ Item::Item(const uint16_t type, uint16_t count /*= 0*/) :
 	setDefaultDuration();
 }
 
-// Mytheos
-Item::Item(const uint16_t type, uint16_t count /*= 0*/, bool mytheosLoot) :
-	id(type)
-{
-	const ItemType& it = items[id];
+// Mytheos Auxiliar methods for assigning item stats recursively.
+void Item::assignMytheosItemStats(int8_t numberStats, uint32_t ilvl) {
+	int8_t i = numberStats;
 
-	uint8_t randRarityAux = uniform_random(0, 99);
-
-	if (it.itemLevel > 0 && it.itemLevel < 10) {
-		getRarity(randRarityAux);
-		switch (rarity) {
-			case MYTHEOSITEMRARITY_NORMAL: {
-				break;
-			}
-			case MYTHEOSITEMRARITY_MAGIC: {
-				uint8_t randomStat = uniform_random(0, MYTHEOSSTATPRIMARY_LAST);
-				arrayItemStats[0] = randomStat;
-				randomStat = uniform_random(0, MYTHEOSSTATPRIMARY_LAST);
-				arrayItemStats[1] = randomStat;
-				break;
-			}
-			case MYTHEOSITEMRARITY_RARE: {
-				break;
-			}
-			case MYTHEOSITEMRARITY_MYTHIC: {
-				break;
-			}
-			case MYTHEOSITEMRARITY_LEGENDARY: {
-				break;
-			}
-		}
+	uint8_t randomStat = uniform_random(0, MYTHEOSSTATPRIMARY_LAST);
+	if (randomStat > 3) {
+		randomStat = uniform_random(0, MYTHEOSSTATPRIMARY_LAST);
+		int32_t randomStatRange = uniform_random(1, static_cast<uint16_t>(ilvl / 5));
+		setMytheosAttr(i + 1, randomStat, randomStatRange);
 	}
 
-	// roll rarity > for each stat de rareza.
-	// if ilvl? > mytheosItemsStats[i] = rangodeIlvl(ilvl).
+	//std::cout << "ItemStat[" << std::to_string(i) << "]: " << getMytheosItemStat(i) << ", ItemStatValue[" << std::to_string(i) << "]: " << getMytheosItemStatValue(i) << "\n";
+	assignMytheosItemStats2(--i, ilvl);
+}
 
-	if (it.isFluidContainer() || it.isSplash()) {
-		setFluidType(count);
-	}
-	else if (it.stackable) {
-		if (count != 0) {
-			setItemCount(count);
-		}
-		else if (it.charges != 0) {
-			setItemCount(it.charges);
-		}
-	}
-	else if (it.charges != 0) {
-		if (count != 0) {
-			setCharges(count);
-		}
-		else {
-			setCharges(it.charges);
-		}
-	}
+void Item::assignMytheosItemStats2(int8_t numberStats, uint32_t ilvl) {
+	int8_t i = numberStats;
+	if (i < 0) {
+		return;
+	} else {
+		uint8_t randomStat = uniform_random(0, MYTHEOSSTATPRIMARY_LAST);
+		int32_t randomStatRange = uniform_random(1, static_cast<uint16_t>(ilvl / 5));
+		setMytheosAttr(i +  1, randomStat, randomStatRange);
 
-	setDefaultDuration();
+		//std::cout << "ItemStat[" << std::to_string(i) << "]: " << getMytheosItemStat(i) << ", ItemStatValue[" << std::to_string(i) << "]: " << getMytheosItemStatValue(i) << "\n";
+		assignMytheosItemStats2(--i, ilvl);
+	}
 }
 
 Item::Item(const Item& i) :
@@ -352,6 +280,239 @@ bool Item::equals(const Item* otherItem) const
 		}
 	}
 	return true;
+}
+
+// Mytheos
+void Item::setMytheosAttr(uint8_t statSlot, uint8_t statType, int32_t value)
+{
+	switch (statSlot) {
+		case 1: {
+			getAttributes()->setBothIntAttr(ITEM_ATTRIBUTE_STATSLOTONE, statType, value);
+			break;
+		}
+		case 2: {
+			getAttributes()->setBothIntAttr(ITEM_ATTRIBUTE_STATSLOTTWO, statType, value);
+			break;
+		}
+		case 3: {
+			getAttributes()->setBothIntAttr(ITEM_ATTRIBUTE_STATSLOTTHREE, statType, value);
+			break;
+		}
+		case 4: {
+			getAttributes()->setBothIntAttr(ITEM_ATTRIBUTE_STATSLOTFOUR, statType, value);
+			break;
+		}
+		case 5: {
+			getAttributes()->setBothIntAttr(ITEM_ATTRIBUTE_STATSLOTFIVE, statType, value);
+			break;
+		}
+		case 6: {
+			getAttributes()->setBothIntAttr(ITEM_ATTRIBUTE_STATSLOTSIX, statType, value);
+			break;
+		}
+		case 7: {
+			getAttributes()->setIntAttr(ITEM_ATTRIBUTE_ITEMLEVEL, value);
+			break;
+		}
+	}
+}
+
+bool Item::hasMytheosStatInSlot(uint8_t statSlot) const
+{
+	switch (statSlot) {
+		case 1: {
+			return getSecondIntAttr(ITEM_ATTRIBUTE_STATSLOTONE) != 0;
+			break;
+		}
+		case 2: {
+			return getSecondIntAttr(ITEM_ATTRIBUTE_STATSLOTTWO) != 0;
+			break;
+		}
+		case 3: {
+			return getSecondIntAttr(ITEM_ATTRIBUTE_STATSLOTTHREE) != 0;
+			break;
+		}
+		case 4: {
+			return getSecondIntAttr(ITEM_ATTRIBUTE_STATSLOTFOUR) != 0;
+			break;
+		}
+		case 5: {
+			return getSecondIntAttr(ITEM_ATTRIBUTE_STATSLOTFIVE) != 0;
+			break;
+		}
+		case 6: {
+			return getSecondIntAttr(ITEM_ATTRIBUTE_STATSLOTSIX) != 0;
+			break;
+		}
+	}
+	return false;
+}
+
+int32_t Item::getMytheosStatValueIntAttr(uint8_t statSlot) const
+{
+	if (!attributes) {
+		return 0;
+	}
+	switch (statSlot) {
+		case 1: {
+			return getSecondIntAttr(ITEM_ATTRIBUTE_STATSLOTONE);
+			break;
+		}
+		case 2: {
+			return getSecondIntAttr(ITEM_ATTRIBUTE_STATSLOTTWO);
+			break;
+		}
+		case 3: {
+			return getSecondIntAttr(ITEM_ATTRIBUTE_STATSLOTTHREE);
+			break;
+		}
+		case 4: {
+			return getSecondIntAttr(ITEM_ATTRIBUTE_STATSLOTFOUR);
+			break;
+		}
+		case 5: {
+			return getSecondIntAttr(ITEM_ATTRIBUTE_STATSLOTFIVE);
+			break;
+		}
+		case 6: {
+			return getSecondIntAttr(ITEM_ATTRIBUTE_STATSLOTSIX);
+			break;
+		}
+	}
+	return 0;
+}
+
+uint8_t Item::getMytheosStatTypeIntAttr(uint8_t statSlot) const
+{
+	if (!attributes) {
+		return 0;
+	}
+	switch (statSlot) {
+		case 1: {
+			return getIntAttr(ITEM_ATTRIBUTE_STATSLOTONE);
+			break;
+		}
+		case 2: {
+			return getIntAttr(ITEM_ATTRIBUTE_STATSLOTTWO);
+			break;
+		}
+		case 3: {
+			return getIntAttr(ITEM_ATTRIBUTE_STATSLOTTHREE);
+			break;
+		}
+		case 4: {
+			return getIntAttr(ITEM_ATTRIBUTE_STATSLOTFOUR);
+			break;
+		}
+		case 5: {
+			return getIntAttr(ITEM_ATTRIBUTE_STATSLOTFIVE);
+			break;
+		}
+		case 6: {
+			return getIntAttr(ITEM_ATTRIBUTE_STATSLOTSIX);
+			break;
+		}
+	}
+	return 0;
+}
+
+const std::string Item::getMytheosStatTypeStrAttr(uint8_t statSlot) const
+{
+	if (!attributes) {
+		return ItemAttributes::emptyString;
+	}
+	switch (statSlot) {
+		case 1: {
+			return mytheosStatInSlotToString(ITEM_ATTRIBUTE_STATSLOTONE);
+			break;
+		}
+		case 2: {
+			return mytheosStatInSlotToString(ITEM_ATTRIBUTE_STATSLOTTWO);
+			break;
+		}
+		case 3: {
+			return mytheosStatInSlotToString(ITEM_ATTRIBUTE_STATSLOTTHREE);
+			break;
+		}
+		case 4: {
+			return mytheosStatInSlotToString(ITEM_ATTRIBUTE_STATSLOTFOUR);
+			break;
+		}
+		case 5: {
+			return mytheosStatInSlotToString(ITEM_ATTRIBUTE_STATSLOTFIVE);
+			break;
+		}
+		case 6: {
+			return mytheosStatInSlotToString(ITEM_ATTRIBUTE_STATSLOTSIX);
+			break;
+		}
+	}
+	return ItemAttributes::emptyString;
+}
+
+const std::string Item::mytheosStatInSlotToString(itemAttrTypes type) const
+{
+	if (!attributes) {
+		return ItemAttributes::emptyString;
+	}
+	switch (type) {
+		case ITEM_ATTRIBUTE_STATSLOTONE: {
+			return mytheosStatInSlotToString(getIntAttr(ITEM_ATTRIBUTE_STATSLOTONE));
+			break;
+		}
+		case ITEM_ATTRIBUTE_STATSLOTTWO: {
+			return mytheosStatInSlotToString(getIntAttr(ITEM_ATTRIBUTE_STATSLOTTWO));
+			break;
+		}
+		case ITEM_ATTRIBUTE_STATSLOTTHREE: {
+			return mytheosStatInSlotToString(getIntAttr(ITEM_ATTRIBUTE_STATSLOTTHREE));
+			break;
+		}
+		case ITEM_ATTRIBUTE_STATSLOTFOUR: {
+			return mytheosStatInSlotToString(getIntAttr(ITEM_ATTRIBUTE_STATSLOTFOUR));
+			break;
+		}
+		case ITEM_ATTRIBUTE_STATSLOTFIVE: {
+			return mytheosStatInSlotToString(getIntAttr(ITEM_ATTRIBUTE_STATSLOTFIVE));
+			break;
+		}
+		case ITEM_ATTRIBUTE_STATSLOTSIX: {
+			return mytheosStatInSlotToString(getIntAttr(ITEM_ATTRIBUTE_STATSLOTSIX));
+			break;
+		}
+	}
+	return ItemAttributes::emptyString;
+}
+
+const std::string Item::mytheosStatInSlotToString(uint8_t statType) const
+{
+	switch (statType) {
+		case 0: {
+			return "Str";
+			break;
+		}
+		case 1: {
+			return "Vit";
+			break;
+		}
+		case 2: {
+			return "Agi";
+			break;
+		}
+		case 3: {
+			return "Dex";
+			break;
+		}
+		case 4: {
+			return "Int";
+			break;
+		}
+		case 5: {
+			return "Wis";
+			break;
+		}
+	}
+	return ItemAttributes::emptyString;
 }
 
 int8_t Item::getRarity(uint16_t value)
@@ -719,6 +880,29 @@ Attr_ReadValue Item::readAttr(AttrTypes_t attr, PropStream& propStream)
 			break;
 		}
 
+		// Mytheos item stats. TODO: arreglar el cochinero, aka, manejar errores.
+		case ATTR_MYTHEOS_STATS: {
+			uint8_t mytheosStatsAmountAux = 0;
+			for (uint8_t i = 0; i < MYTHEOSITEMSTATSLOT_LAST + 1; i++) {
+				uint8_t mytheosItemStat;
+				if (!propStream.read<uint8_t>(mytheosItemStat)) {
+					mytheosItemStat = 0;
+				}
+
+				int32_t mytheosItemStatValue;
+				if (!propStream.read<int32_t>(mytheosItemStatValue)) {
+					mytheosItemStatValue = 0;
+				}
+
+				setMytheosAttr(i + 1, mytheosItemStat, mytheosItemStatValue);
+				mytheosStatsAmountAux++;
+				if (mytheosItemStat != 0 && mytheosItemStatValue != 0) {
+					std::cout << "La espada tiene" << std::to_string(mytheosStatsAmountAux) <<"\n";
+				}
+			}
+			break;
+		}
+
 		//these should be handled through derived classes
 		//If these are called then something has changed in the items.xml since the map was saved
 		//just read the values
@@ -802,8 +986,10 @@ bool Item::unserializeAttr(PropStream& propStream)
 {
 	uint8_t attr_type;
 	while (propStream.read<uint8_t>(attr_type) && attr_type != 0) {
+		std::cout << "Intentando readAttr.\n" << attr_type;
 		Attr_ReadValue ret = readAttr(static_cast<AttrTypes_t>(attr_type), propStream);
 		if (ret == ATTR_READ_ERROR) {
+			std::cout << "Error leyendo los atributos.\n";
 			return false;
 		} else if (ret == ATTR_READ_END) {
 			return true;
@@ -897,6 +1083,7 @@ void Item::serializeAttr(PropWriteStream& propWriteStream) const
 	if (hasAttribute(ITEM_ATTRIBUTE_ATTACK)) {
 		propWriteStream.write<uint8_t>(ATTR_ATTACK);
 		propWriteStream.write<int32_t>(getIntAttr(ITEM_ATTRIBUTE_ATTACK));
+		//std::cout << "Es normal que jale esto.  \n";
 	}
 
 	if (hasAttribute(ITEM_ATTRIBUTE_DEFENSE)) {
@@ -924,6 +1111,19 @@ void Item::serializeAttr(PropWriteStream& propWriteStream) const
 		propWriteStream.write<uint8_t>(getIntAttr(ITEM_ATTRIBUTE_SHOOTRANGE));
 	}
 
+	// Mytheos
+	if (hasAttribute(ITEM_ATTRIBUTE_STATSLOTONE)) {
+		propWriteStream.write<uint8_t>(ATTR_MYTHEOS_STATS);
+		for (uint8_t i = 0; i < MYTHEOSITEMSTATSLOT_LAST + 1; i++) {
+			if (hasMytheosStatInSlot(i + 1)) {
+				propWriteStream.write<uint8_t>(getMytheosStatTypeIntAttr(i + 1));
+				propWriteStream.write<int32_t>(getMytheosStatValueIntAttr(i + 1));
+			} else {
+				continue;
+			}
+		}
+	}
+
 	if (hasAttribute(ITEM_ATTRIBUTE_CUSTOM)) {
 		const ItemAttributes::CustomAttributeMap* customAttrMap = attributes->getCustomAttributeMap();
 		propWriteStream.write<uint8_t>(ATTR_CUSTOM_ATTRIBUTES);
@@ -936,6 +1136,8 @@ void Item::serializeAttr(PropWriteStream& propWriteStream) const
 			entry.second.serialize(propWriteStream);
 		}
 	}
+
+
 }
 
 bool Item::hasProperty(ITEMPROPERTY prop) const
@@ -1587,6 +1789,22 @@ std::string Item::getDescription(const ItemType& it, int32_t lookDistance,
 			s << '\n' << *text;
 		}
 	}
+
+	// Mytheos
+	if (it.itemLevel > 0) {
+		for (uint8_t i = 0; i < MYTHEOSITEMSTATSLOT_LAST + 1; i++) {
+			if (item->getMytheosStatValueIntAttr(i + 1) != 0) {
+				if (i == 0) {
+					s << '\n' << "[" << item->getMytheosStatTypeStrAttr(i + 1) << " " << std::to_string(item->getMytheosStatValueIntAttr(i + 1)) << "]";
+				} else {
+					s << " " << "[" << item->getMytheosStatTypeStrAttr(i + 1) << " " << std::to_string(item->getMytheosStatValueIntAttr(i + 1)) << "]";
+				}
+			} else {
+				continue;
+			}
+		}
+	}
+
 	return s.str();
 }
 
@@ -1809,6 +2027,49 @@ void ItemAttributes::increaseIntAttr(itemAttrTypes type, int64_t value)
 
 	getAttr(type).value.integer += value;
 }
+
+// Mytheos
+int64_t ItemAttributes::getSecondIntAttr(itemAttrTypes type) const
+{
+	if (!isMytheosAttrType(type)) {
+		return 0;
+	}
+
+	const Attribute* attr = getExistingAttr(type);
+	if (!attr) {
+		return 0;
+	}
+	return attr->value2;
+}
+
+void ItemAttributes::setSecondIntAttr(itemAttrTypes type, int64_t value)
+{
+	if (!isMytheosAttrType(type)) {
+		return;
+	}
+
+	getAttr(type).value2 = value;
+}
+
+void ItemAttributes::increaseSecondIntAttr(itemAttrTypes type, int64_t value)
+{
+	if (!isMytheosAttrType(type)) {
+		return;
+	}
+
+	getAttr(type).value2 += value;
+}
+
+void ItemAttributes::setBothIntAttr(itemAttrTypes type, int32_t value1, int32_t value2)
+{
+	if (!isMytheosAttrType(type)) {
+		return;
+	}
+
+	getAttr(type).value.integer = value1;
+	getAttr(type).value2 = value2;
+}
+//
 
 const ItemAttributes::Attribute* ItemAttributes::getExistingAttr(itemAttrTypes type) const
 {

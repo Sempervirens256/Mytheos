@@ -330,7 +330,7 @@ class ItemType
 		int32_t runeLevel = 0;
 
 		//Mytheos Charly
-		int32_t itemlevel = 0;
+		int32_t itemLevel = 0;
 
 		CombatType_t combatType = COMBAT_NONE;
 
